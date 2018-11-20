@@ -8,7 +8,8 @@
 
 import Foundation
 
-class Item {
+//must make class codable (which means encodable and decodable) to use nscoder
+class Item: Codable {
     var title : String = ""
     var done : Bool = false
 }
