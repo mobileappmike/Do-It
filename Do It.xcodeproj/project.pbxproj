@@ -15,6 +15,7 @@
 		5C9CBF7D21A3722F0056574D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5C9CBF7C21A3722F0056574D /* Assets.xcassets */; };
 		5C9CBF8021A3722F0056574D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5C9CBF7E21A3722F0056574D /* LaunchScreen.storyboard */; };
 		5CE96E5D21A660EB0028D2BB /* CategoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CE96E5C21A660EB0028D2BB /* CategoryTableViewCell.swift */; };
+		5CE96E5F21A664900028D2BB /* ItemTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CE96E5E21A664900028D2BB /* ItemTableViewCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		5C9CBF7F21A3722F0056574D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5C9CBF8121A3722F0056574D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5CE96E5C21A660EB0028D2BB /* CategoryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTableViewCell.swift; sourceTree = "<group>"; };
+		5CE96E5E21A664900028D2BB /* ItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemTableViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				5C9CBF7921A3722B0056574D /* Main.storyboard */,
+				5CE96E5E21A664900028D2BB /* ItemTableViewCell.swift */,
 				5CE96E5C21A660EB0028D2BB /* CategoryTableViewCell.swift */,
 				5C9CBF7E21A3722F0056574D /* LaunchScreen.storyboard */,
 			);
@@ -172,6 +175,7 @@
 				5C603F1F21A6266E00276D5F /* CategoryViewController.swift in Sources */,
 				5C9CBF7821A3722B0056574D /* TodoListViewController.swift in Sources */,
 				5C603F1D21A4B1C000276D5F /* DataModel.xcdatamodeld in Sources */,
+				5CE96E5F21A664900028D2BB /* ItemTableViewCell.swift in Sources */,
 				5C9CBF7621A3722B0056574D /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
