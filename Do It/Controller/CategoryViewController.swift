@@ -59,12 +59,12 @@ class CategoryViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath) as! CategoryTableViewCell
         
         let category = categoryArray[indexPath.row]
         
-        cell.textLabel?.text = category.name
-        
+        cell.categoryLabel.text = category.name
+
         return cell
     }
     
