@@ -13,6 +13,13 @@ class TodoListViewController: UITableViewController {
     
     var itemArray = [Item]()
     
+    //created for segue from categories...using didSet makes sure that we have a value for category before we request loading the items
+    var selectedCategory : Category? {
+        didSet {
+            loadItems()
+        }
+    }
+    
 //    create filepath to documents folder
 //    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
@@ -23,8 +30,6 @@ class TodoListViewController: UITableViewController {
         super.viewDidLoad()
         
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        
-        loadItems()
         
     }
 
@@ -78,6 +83,7 @@ class TodoListViewController: UITableViewController {
             //these are required attributes for the DataModel we set up
             newItem.title = textField.text!
             newItem.done = false
+            newItem.parentCategory = self.selectedCategory
             
             self.itemArray.append(newItem)
             
@@ -110,9 +116,20 @@ class TodoListViewController: UITableViewController {
     }
     
     //give the function parameters so you can call on it in the search bar
-    //give it a default value so you don't always need a parameter
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+    //give it default values so you don't always need a parameter
+    //give loadItems its own predicate so you can change and compound the predicate if necessary, as shown below
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
 //        let request: NSFetchRequest<Item> = Item.fetchRequest()
+        
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        
+        //wrap it in an if statement to make sure we never unwrap add'l predicate when there isn't an add'l predicate
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate,additionalPredicate])
+        } else {
+            request.predicate = categoryPredicate
+        }
+        
         do {
             itemArray = try context.fetch(request)
         } catch {
@@ -130,12 +147,12 @@ class TodoListViewController: UITableViewController {
         let request : NSFetchRequest<Item> = Item.fetchRequest()
         
         //check out predicate cheat sheet for more info...[cd] means not case and diacratic sensitive
-        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         
         //must use brackets bc it expects an array
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
-        loadItems(with: request)
+        loadItems(with: request, predicate: predicate)
     }
         
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
