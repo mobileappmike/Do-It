@@ -7,18 +7,22 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListViewController: UITableViewController {
     
     var itemArray = [Item]()
     
-    //create filepath to documents folder
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+//    create filepath to documents folder
+//    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
+    //this is how to tap into another class and cast it. context = data purgatory
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print(dataFilePath!)
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
         loadItems()
         
@@ -46,10 +50,13 @@ class TodoListViewController: UITableViewController {
     
     //MARK: TableView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-       // print(itemArray[indexPath.row])
         
         //following line reverses the boolean .done property
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+        //must use the context.delete FIRST because of the numbering issue
+//        context.delete(itemArray[indexPath.row])
+//        itemArray.remove(at: indexPath.row)
         
         saveItems()
         
@@ -64,8 +71,13 @@ class TodoListViewController: UITableViewController {
         let alert = UIAlertController(title: "Add New To Do Item", message: "", preferredStyle: .alert)
         
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
-            let newItem = Item()
+            
+            //every row (aka Item) is an NSManagedObject
+            let newItem = Item(context: self.context)
+            
+            //these are required attributes for the DataModel we set up
             newItem.title = textField.text!
+            newItem.done = false
             
             self.itemArray.append(newItem)
             
@@ -85,31 +97,57 @@ class TodoListViewController: UITableViewController {
     
     //MARK: Model Manipulation
     func saveItems() {
-        //encoders and decoders are required to have a do, catch, try loop
-        let encoder = PropertyListEncoder()
-        
+        //encoders and decoders, and core data are required to have a do, catch, try loop
         do {
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataFilePath!)
+            //this line saves the context into the data model
+            try context.save()
         } catch {
-            print("Error encoding item array \(error)")
+            print("error saving context \(error)")
         }
         
         //must reload to display the new textfield
         tableView.reloadData()
     }
     
-    func loadItems() {
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-            itemArray = try decoder.decode([Item].self, from: data)
-            } catch {
-                print("Error decoding item array \(error)")
+    //give the function parameters so you can call on it in the search bar
+    //give it a default value so you don't always need a parameter
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+//        let request: NSFetchRequest<Item> = Item.fetchRequest()
+        do {
+            itemArray = try context.fetch(request)
+        } catch {
+            print("Error fetching data from context \(error)")
+        }
+        
+        tableView.reloadData()
+    }
+    
+}
+    
+    //MARK: Search Bar Extension
+    extension TodoListViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        //check out predicate cheat sheet for more info...[cd] means not case and diacratic sensitive
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+        //must use brackets bc it expects an array
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        loadItems(with: request)
+    }
+        
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+
+            //this function puts the searchBar in the main queue, so that you can tell it to stop the process
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
             }
         }
     }
-    
-    
 }
+
 
