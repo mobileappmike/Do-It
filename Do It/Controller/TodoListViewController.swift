@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import Foundation
 
 class TodoListViewController: UITableViewController {
     
@@ -61,14 +62,17 @@ class TodoListViewController: UITableViewController {
     //MARK: TableView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        //following line reverses the boolean .done property
-//        todoItems[indexPath.row].done = !todoItems[indexPath.row].done
+        if let item = todoItems?[indexPath.row] {
+            do {
+            try realm.write {
+                item.done = !item.done
+            }
+            } catch {
+                print("Error saving done status \(error)")
+            }
+        }
         
-        //must use the context.delete FIRST because of the numbering issue
-//        context.delete(todoItems[indexPath.row])
-//        todoItems.remove(at: indexPath.row)
-        
-//        saveItems()
+        tableView.reloadData()
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -117,27 +121,20 @@ class TodoListViewController: UITableViewController {
 }
     
     //MARK: Search Bar Extension
-//    extension TodoListViewController: UISearchBarDelegate {
-//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-//        let request : NSFetchRequest<Item> = Item.fetchRequest()
-//
-//        //check out predicate cheat sheet for more info...[cd] means not case and diacratic sensitive
-//        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-//
-//        //must use brackets bc it expects an array
-//        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-//
-//        loadItems(with: request, predicate: predicate)
-//    }
-//
-//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-//        if searchBar.text?.count == 0 {
-//            loadItems()
-//
-//            //this function puts the searchBar in the main queue, so that you can tell it to stop the process
-//            DispatchQueue.main.async {
-//                searchBar.resignFirstResponder()
-//            }
-//        }
-//    }
-//}
+    extension TodoListViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        todoItems = todoItems?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "title", ascending: true)
+    }
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+
+            //this function puts the searchBar in the main queue, so that you can tell it to stop the process
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
+    }
+}
