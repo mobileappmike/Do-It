@@ -8,9 +8,8 @@
 
 import UIKit
 import RealmSwift
-import SwipeCellKit
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
     /*
      Steps to set up Core Data TableView for TO-DO list
      1. Create Array for items and a Singleton for the context
@@ -61,9 +60,8 @@ class CategoryViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath) as! SwipeTableViewCell
-        
-        cell.delegate = self
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        //how to tap into a super class
         
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories Added Yet"
         
@@ -100,22 +98,22 @@ class CategoryViewController: UITableViewController {
             
             tableView.reloadData()
     }
+    
+    //MARK: Delete Data from Swipe
+    //this is how to override a function in a superclass
+    override func updateModel(at indexPath: IndexPath) {
+        if let categoryForDeletion = self.categories?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(categoryForDeletion)
+                }
+            } catch {
+                print("error deleting category, \(error)")
+            }
+        }
+    }
+    
+    
 }
 
-//MARK: Swipe Cell Delegate Methods
-extension CategoryViewController: SwipeTableViewCellDelegate {
-    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
-        
-        guard orientation == .right else { return nil }
-        
-        let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
-            // handle action by updating model with deletion
-        }
-        
-        // customize the action appearance
-        deleteAction.image = UIImage(named: "Trash")
-        
-        return [deleteAction]
-    
-    }
-}
+
