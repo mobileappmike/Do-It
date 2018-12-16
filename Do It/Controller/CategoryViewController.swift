@@ -28,7 +28,6 @@ class CategoryViewController: SwipeTableViewController {
         
         loadCategories()
 
-        tableView.rowHeight = 80
     }
     
     //MARK: Add Category

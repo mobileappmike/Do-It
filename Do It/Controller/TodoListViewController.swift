@@ -31,9 +31,7 @@ class TodoListViewController: SwipeTableViewController {
         super.viewDidLoad()
         
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        
-        tableView.rowHeight = 80
-        
+         
     }
 
 
@@ -123,7 +121,7 @@ class TodoListViewController: SwipeTableViewController {
     //MARK: Delete Data from Swipe
     //this is how to override a function in a superclass
     override func updateModel(at indexPath: IndexPath) {
-        if let itemForDeletion = self.selectedCategory?.items[indexPath.row] {
+        if let itemForDeletion = todoItems?[indexPath.row] {
             do {
                 try self.realm.write {
                     self.realm.delete(itemForDeletion)
