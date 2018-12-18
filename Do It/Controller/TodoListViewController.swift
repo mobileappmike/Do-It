@@ -8,11 +8,14 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class TodoListViewController: SwipeTableViewController {
     
     var todoItems : Results<Item>?
     let realm = try! Realm()
+    
+    @IBOutlet weak var searchBar: UISearchBar!
     
     //created for segue from categories...using didSet makes sure that we have a value for category before we request loading the items
     var selectedCategory : Category? {
@@ -30,10 +33,43 @@ class TodoListViewController: SwipeTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-         
+        tableView.separatorStyle = .none
+        
+    }
+    
+    //this function is after everything is loaded...RIGHT before user views the screen. Navcontroller doesn't work in viewDidLoad bc it isn't loaded yet
+    override func viewWillAppear(_ animated: Bool) {
+        title = selectedCategory?.name
+        guard let colorHex = selectedCategory?.color else { fatalError() }
+        updateNavBar(withHexCode: colorHex)
     }
 
+    //becomes active when user is closing out this view
+    override func viewWillDisappear(_ animated: Bool) {
+        updateNavBar(withHexCode: "1D9BF6")
+    }
+    
+    //MARK: Nav Bar Setup Methods
+    func updateNavBar(withHexCode colorHexCode : String) {
+        guard let navBar = navigationController?.navigationBar else {
+            fatalError("Navigation Controller does not exist.")
+        }
+        
+        //this GUARD LET with a fatal error is useful when adding new features and testing
+        //GUARD is the best to use if you're using IF LET without the ELSE in it
+
+        guard let navBarColor = UIColor(hexString: colorHexCode) else { fatalError() }
+        
+        navBar.barTintColor = navBarColor
+        
+        searchBar.barTintColor = navBarColor
+        
+        navBar.tintColor = ContrastColorOf(navBarColor, returnFlat: true)
+        
+        //must use largetitletext bc we're using large titles
+        navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(navBarColor, returnFlat: true)]
+        
+    }
 
     //MARK: - TableView DataSource Methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -45,6 +81,17 @@ class TodoListViewController: SwipeTableViewController {
         
         if let item = todoItems?[indexPath.row] {
             cell.textLabel?.text = item.title
+            
+            let categoryColor = UIColor.init(hexString: selectedCategory!.color)
+            
+            //MUST convert both sides of equation to CGFloats BEFORE dividing
+            if let color = categoryColor!.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(todoItems!.count)) {
+                cell.backgroundColor = color
+                cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+            }
+            
+            print("version 1: \(CGFloat(indexPath.row / todoItems!.count))")
+            print("version 2: \(CGFloat(indexPath.row) / CGFloat(todoItems!.count))")
             
             //ternary operator
             cell.accessoryType = item.done ? .checkmark : .none
